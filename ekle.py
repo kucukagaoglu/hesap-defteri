@@ -26,15 +26,17 @@ if(not form.getvalue('adi') or not form.getvalue('miktari') or not form.getvalue
 
 else:
 	if form.getvalue('adi'):
-		print ('<td><b> Harcama Adi:</b></td><td>%s</td></tr>' % form['adi'].value)	
+		print ('<td><b> Harcama Yeri:</b></td><td>%s</td></tr>' % form['adi'].value)	
 	if form.getvalue('miktari'):
 		print ('<td><b> Harcama Miktari:</b></td><td>%s TL</td></tr>' % form['miktari'].value)
 	if form.getvalue('tarihi'):
 		print ('<td><b> Harcama Tarihi:</b></td><td>%s</td></tr>' % form['tarihi'].value)
 	if form.getvalue('dropdown'):
 		print ('<td><b> Harcama Turu:</b></td><td>%s</td></tr>' % form['dropdown'].value)
+	if form.getvalue('aciklama'):
+		print ('<td><b> Aciklama:</b></td><td>%s</td></tr>' % form['aciklama'].value)
 
-	cur.execute('''INSERT INTO harcamalar (adi,miktari,tarihi,turu) VALUES ("%s","%d","%s","%s")'''%(form['adi'].value,int(form['miktari'].value),form['tarihi'].value,form['dropdown'].value))
+	cur.execute('''INSERT INTO harcamalar (adi,miktari,tarihi,turu,aciklama) VALUES ("%s","%d","%s","%s","%s")'''%(form['adi'].value,int(form['miktari'].value),form['tarihi'].value,form['dropdown'].value,form['aciklama'].value))
 #	cur.execute('''INSERT INTO harcamalar ({},{},{},{})'''.format(form['adi'].value,int(form['miktari'].value),form['tarihi'].value,form['dropdown'].value))
 	#cur.execute('''INSERT INTO harcamalar ({},{05d},{},{})'''.format("cagdas","55","12/12/2015","market"))
 	baglanti.commit()
@@ -49,9 +51,10 @@ print("</table>")
 print ("<hr>")
 
 print ('<form method="POST">')
-print('<br>Harcama Adi: <input type="text" name="adi">')
+print('<br>Harcama Yeri: <input type="text" name="adi">')
 print('<br>Harcama Miktari: <input type="text" name="miktari">')
 print('<br>Tarih: <input type="text" name="tarihi" value=%s>'%tarih)
+
 
 
 print ('<br><select name="dropdown">')
@@ -70,9 +73,10 @@ print ('<option value="arac bakim/onarim" >arac bakim/onarim</option>')
 print ('<option value="ev bakim/onarim" >ev bakim/onarim</option>')
 
 print ('</select>')
+print('<br>Aciklama : <input type="text" name="aciklama">')
 
 
-print('	<input type="submit" name="ekle" value="Ekle">')
+print('	<br><input type="submit" name="ekle" value="Ekle">')
 print ('</form>')
 
 print ("<hr>")
