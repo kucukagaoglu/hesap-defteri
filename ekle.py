@@ -46,16 +46,7 @@ else:
 
 print("</table>")
 
-
-
-
-
-
-
-
-
-
-
+print ("<hr>")
 
 print ('<form method="POST">')
 print('<br>Harcama Adi: <input type="text" name="adi">')
@@ -83,4 +74,37 @@ print ('</select>')
 
 print('	<input type="submit" name="ekle" value="Ekle">')
 print ('</form>')
+
+print ("<hr>")
+print('<table border="1">')
+
+print("<h2>SON YAPILAN HARCAMALAR</h1>")
+
+sorgu="SELECT * FROM harcamalar"
+cur.execute(sorgu)				
+satirlar= cur.fetchall()
+
+toplam="SELECT SUM(miktari) from harcamalar"
+cur.execute(toplam)
+toplam_miktar=cur.fetchone()
+
+
+
+tablo="<tr><td><b>ID</td><td><b>HARCANAN YER</td><td><b>MIKTAR</td>"+"<td><b>TARIHI</td><td><b>TURU</td><td><b>ACIKLAMA</td></tr>" #bu cok onemli!!!
+
+for satir in satirlar:
+	tablo=tablo+"<tr><td>"+str(satir[0])+"</td><td>"+str(satir[1])+"</td><td>"+str(satir[2])+"</td>"+"<td>"+str(satir[3])+"</td><td>"+str(satir[4])+"</td><td>"+str(satir[5])+"</td></tr>"
+#return tablo	
+print tablo,"<br>"
+
+print ('<td>#</td><td>TOPLAM HARCAMA</td><td><b>%s</b></td>') % toplam_miktar
+
+
+
+
+
+
+
+
+
 print ('</body></html>')
