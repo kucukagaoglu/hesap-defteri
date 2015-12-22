@@ -9,6 +9,7 @@ simdi = datetime.datetime.now()
 ay=simdi.month
 
 baglanti=sqlite3.connect("/var/www/test/hesap.db")
+baglanti.text_factory = str
 cur=baglanti.cursor()
 
 form=cgi.FieldStorage()
@@ -16,13 +17,39 @@ print ('Content-Type:text/html; charset=windows-1254\n')
 
 cgitb.enable()
 
+
+print("""
+<head>
+  <meta charset="utf-8">
+  <title>jQuery UI Datepicker - Default functionality</title>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script>
+  $(function() {
+    $( "#datepicker" ).datepicker();
+  });
+  </script>
+</head>
+
+	""")
+
 print('<html><title>Ekleme</title>')
 
 print("""<style>
 
-body {background-color:lightgrey}
+body {
 
+background-color:lightgrey ; 
+font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
 
+}
+
+button, input, select, textarea {
+  font-family : "Trebuchet MS", Arial, Helvetica, sans-serif;
+  font-size   : 100%;
+}
 
 #customers {
     font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
@@ -67,7 +94,9 @@ else:
 		print ('<td><b> Harcama Turu:</b></td><td>%s</td></tr>' % form['dropdown'].value)
 	if form.getvalue('aciklama'):
 		print ('<td><b> Aciklama:</b></td><td>%s</td></tr>' % form['aciklama'].value)
-		print ("</fieldset>")
+		
+
+	form['tarihi'].value=datetime.datetime.strptime(form['tarihi'].value, '%m/%d/%Y').strftime('%Y-%m-%d')
 
 	cur.execute('''INSERT INTO harcamalar 
 		(adi,miktari,tarihi,turu,aciklama) 
@@ -81,22 +110,44 @@ else:
 	print("<body>")
 	print("</table>")
 	print ('<td><b> Kayit basari ile eklendi!</b></td>')
+	print('<meta http-equiv="refresh" content="0; url=ekle.py" />') #birden fazla eklemek icin engel!
 
+print ("</fieldset>")
 
 print("</table>")
 
 print ("<hr>")
 
-
-
 print ('<form method="POST">')
 print ("<fieldset>")
 print("<legend><b> HARCAMA EKLE </legend>")
 print('<br>Harcama Yeri:<br> <input type="text" name="adi">')
-print('<br>Harcama Miktari: <br><input type="text" name="miktari">')
-print('<br>Tarih(Yil-Ay-Gun): <br><input type="text" name="tarihi" value=%s>'%tarih)
 
-print ('<br>Turu:<br><select name="dropdown">')
+
+
+print('<br>Harcama Miktari: <br><input type="number" name="miktari">')
+
+print("""
+	<script	>
+$('input[type="number"]').keypress(function(e) {
+    var a = [];
+    var k = e.which;
+
+    for (i = 48; i < 58; i++)
+        a.push(i);
+
+    if (!(a.indexOf(k)>=0))
+        e.preventDefault();
+});
+
+
+</script>
+	""")
+
+
+print('<br>Tarih(Yil-Ay-Gun): <br><input data-format="dd-MM-yyyy" type="text" id="datepicker" name="tarihi" </input>') #value=%s>'%tarih)
+
+print ('<br><br>Turu:<br><select name="dropdown">')
 print ('<option value="market" selected>market</option>')
 print ('<option value="yakit">yakit</option>')
 print ('<option value="giyim" >giyim</option>')
@@ -115,7 +166,7 @@ print ('</select>')
 print('<br>Aciklama : <br><input type="text" name="aciklama" size="50" value="...">')
 
 
-print('	<br><input type="submit" name="ekle" value="Ekle">')
+print('	<br><input type="submit" name="ekle" value="Ekle" style="color: #FFF; font-weight: bold;font-size: 200%; text-transform: uppercase; background-color: #900;">')
 
 
 
@@ -149,16 +200,13 @@ for satir in satirlar:
 #return tablo	
 print tablo,"<br>"
 
-print ('<td>#</td><td>TOPLAM HARCAMA</td><td><b>%s</b></td>') % toplam_miktar
-
-
-
+print ('<td>#</td><td style="color:blue;"><b>TOPLAM HARCAMA</td><td style="color:red;"><b>%s</b></td>') % toplam_miktar
 
 
 ###################BU AY TABLOSU##############################3
 
 print('<table id="customers">')
-
+print ("<hr>")
 print("<h2>BU AYDAKI(%s) HARCAMALAR</h1>"%ay)
 
 #sorgu="SELECT * FROM harcamalar WHERE date(tarihi)<date('2015-10-01')"
@@ -181,7 +229,7 @@ for satir in satirlar:
 #return tablo	
 print tablo,"<br>"
 
-print ('<td>#</td><td>TOPLAM HARCAMA</td><td><b>%s</b></td>') % toplam_miktar
+print ('<td>#</td><td style="color:blue;"><b>TOPLAM HARCAMA</td><td style="color:red;"><b>%s</b></td>') % toplam_miktar
 
 
 
