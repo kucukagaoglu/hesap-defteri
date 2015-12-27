@@ -2,6 +2,18 @@
 # -*- coding: utf-8 -*-
 
 import cgi, cgitb, os, time, sqlite3,datetime
+"""
+Simple demo of a horizontal bar chart.
+"""
+import matplotlib
+# Force matplotlib to not use any Xwindows backend.
+matplotlib.use('Agg')
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+
 
 ## dd/mm/yyyy format
 tarih=time.strftime("%Y-%m-%d")
@@ -21,15 +33,21 @@ cgitb.enable()
 print("""
 <head>
   <meta charset="utf-8">
-  <title>jQuery UI Datepicker - Default functionality</title>
+  <title>HESAP DEFTERi</title>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
   <script src="//code.jquery.com/jquery-1.10.2.js"></script>
   <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
   <link rel="stylesheet" href="/resources/demos/style.css">
   <script>
-  $(function() {
-    $( "#datepicker" ).datepicker();
-  });
+
+$(function() {
+
+      $( "#datepicker" ).datepicker({ dateFormat: 'yy-mm-dd' });
+
+    });	
+
+
+
   </script>
 </head>
 
@@ -96,7 +114,7 @@ else:
 		print ('<td><b> Aciklama:</b></td><td>%s</td></tr>' % form['aciklama'].value)
 		
 
-	form['tarihi'].value=datetime.datetime.strptime(form['tarihi'].value, '%m/%d/%Y').strftime('%Y-%m-%d')
+	#-ferek kalmadı--form['tarihi'].value=datetime.datetime.strptime(form['tarihi'].value, '%m/%d/%Y').strftime('%Y-%m-%d')
 
 	cur.execute('''INSERT INTO harcamalar 
 		(adi,miktari,tarihi,turu,aciklama) 
@@ -145,7 +163,7 @@ $('input[type="number"]').keypress(function(e) {
 	""")
 
 
-print('<br>Tarih(Yil-Ay-Gun): <br><input data-format="dd-MM-yyyy" type="text" id="datepicker" name="tarihi" </input>') #value=%s>'%tarih)
+print('<br>Tarih(Ay/Gun/Yil): <br><input data-format="dd-MM-yyyy" type="text" id="datepicker" name="tarihi" </input>') #value=%s>'%tarih)
 
 print ('<br><br>Turu:<br><select name="dropdown">')
 print ('<option value="market" selected>market</option>')
@@ -232,7 +250,94 @@ print tablo,"<br>"
 print ('<td>#</td><td style="color:blue;"><b>TOPLAM HARCAMA</td><td style="color:red;"><b>%s</b></td>') % toplam_miktar
 
 
+###################SON 1 AY TOP 10 TABLOSU##############################3
+
+print('<table id="customers">')
+print("<h2>SON BIR AY TOP 10</h1>")
+
+#sorgu="SELECT * FROM harcamalar WHERE date(tarihi)<date('2015-10-01')"
+#SELECT * FROM table_name WHERE strftime('%m', date_column) = '04'
+sorgu="SELECT * FROM harcamalar WHERE date(tarihi)>date('now','-30 days') ORDER BY miktari DESC LIMIT 10" 
+#sorgu="SELECT * FROM harcamalar WHERE strftime('%m', tarihi) = '12'"
+cur.execute(sorgu)				
+satirlar= cur.fetchall()
+
+toplam="SELECT SUM(miktari) FROM harcamalar WHERE date(tarihi)>date('now','-30 days') ORDER BY miktari DESC LIMIT 10" 
+cur.execute(toplam)
+toplam_miktar=cur.fetchone()
 
 
 
+tablo="<tr><th><b>ID</th><th><b>HARCANAN YER</th><th><b>MIKTAR</th>"+"<th><b>TARIHI</th><th><b>TURU</th><th><b>ACIKLAMA</th></tr>" #bu cok onemli!!!
+
+harcanan_yerler=[]
+miktarlar=[]
+for satir in satirlar:
+	tablo=tablo+"<tr><td>"+str(satir[0])+"</td><td>"+str(satir[1])+"</td><td>"+str(satir[2])+"</td>"+"<td>"+str(satir[3])+"</td><td>"+str(satir[4])+"</td><td>"+str(satir[5])+"</td></tr>"
+	harcanan_yerler.append(str(satir[1]))
+	miktarlar.append(int(satir[2]))
+#return tablo	
+print tablo,"<br>"
+
+print ('<td>#</td><td style="color:blue;"><b>TOPLAM HARCAMA</td><td style="color:red;"><b>%s</b></td>') % toplam_miktar
+
+######################grafik cizzitr###########################3
+plt.bar(range(len(miktarlar)), miktarlar, align='center',color="red")
+plt.xticks(range(len(harcanan_yerler)), harcanan_yerler)
+
+#plt.show()
+plt.savefig("top10harcama.jpg")
+## grafigi bas########
+print('<img src="top10harcama.jpg" style="width:50%;height:50%;" alt="" />')
+
+
+###################SON 1 AY SEKTOREL ##############################3
+
+print('<table id="customers">')
+print("<hr>")	
+print("<h2>SON BIR AY SEKTOREL TOP 5</h1>")
+
+#sorgu="SELECT * FROM harcamalar WHERE date(tarihi)<date('2015-10-01')"
+#SELECT * FROM table_name WHERE strftime('%m', date_column) = '04'
+sorgu="SELECT turu,SUM(miktari) FROM harcamalar WHERE date(tarihi)>date('now','-30 days') GROUP BY turu ORDER BY SUM(miktari) DESC LIMIT 5" 
+#sorgu="SELECT * FROM harcamalar WHERE strftime('%m', tarihi) = '12'"
+cur.execute(sorgu)				
+satirlar= cur.fetchall()
+
+
+tablo="<tr><th>#</th><th><b>HARCANAN YER</th><th><b>TOPLAM MIKTAR</th></tr>" #bu cok onemli!!!
+i=0
+top_harcamalar=[]
+top_harcamalar_miktarlar=[]
+for satir in satirlar:
+	i=i+1
+	tablo=tablo+"<tr><td>"+str(i)+"</td><td>"+str(satir[0])+"</td><td>"+str(satir[1])+"</td></tr>"
+	top_harcamalar.append(str(satir[0]))
+	top_harcamalar_miktarlar.append(int(satir[1]))
+#return tablo	
+print tablo,"<br>"
+
+
+######################grafik cizzitr###########################3
+
+plt.figure()
+#values = [3, 12, 5, 8] 
+values=top_harcamalar_miktarlar
+
+#labels = ['a', 'b', 'c', 'd'] 
+labels=top_harcamalar
+
+plt.pie(values, labels=labels, autopct='%.2f')
+plt.show()
+plt.savefig("top_sektor.jpg")
+
+print('<img src="top_sektor.jpg" style="width:50%;height:50%;" alt="" />')
+
+#########################
+
+
+
+
+
+print('<hr>')
 print ('</body></html>')
